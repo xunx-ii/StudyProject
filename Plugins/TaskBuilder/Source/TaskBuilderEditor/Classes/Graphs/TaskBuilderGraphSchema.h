@@ -10,8 +10,8 @@ UCLASS(MinimalAPI)
 class UTaskBuilderGraphSchema : public UEdGraphSchema
 {
 	GENERATED_BODY()
-
 private:
 	void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
+	void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
 
 };

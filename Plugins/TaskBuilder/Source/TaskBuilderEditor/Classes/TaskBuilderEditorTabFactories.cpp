@@ -5,7 +5,7 @@
 
 
 FTaskBuilderGraphTabFactory::FTaskBuilderGraphTabFactory(TSharedPtr<FTaskBuilderEditor> InTaskBuilderEditor)
-	:FDocumentTabFactoryForObjects<UTaskBuilderGraph>(FName("DialogueBuilderGraph"), InTaskBuilderEditor)
+	:FDocumentTabFactoryForObjects<UTaskBuilderEdGraph>(FName("DialogueBuilderGraph"), InTaskBuilderEditor)
 {
 
 }
@@ -23,13 +23,13 @@ void FTaskBuilderGraphTabFactory::OnTabRefreshed(TSharedPtr<SDockTab> Tab) const
 	TaskBuilderGraphEditor->NotifyGraphChanged();
 }
 
-TAttribute<FText> FTaskBuilderGraphTabFactory::ConstructTabNameForObject(UTaskBuilderGraph* DocumentID) const
+TAttribute<FText> FTaskBuilderGraphTabFactory::ConstructTabNameForObject(UTaskBuilderEdGraph* DocumentID) const
 {
 	FString Name = "TaskGraph";
 	return TAttribute<FText>(FText::FromString(Name));
 }
 
-TSharedRef<SWidget> FTaskBuilderGraphTabFactory::CreateTabBodyForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderGraph* DocumentID) const
+TSharedRef<SWidget> FTaskBuilderGraphTabFactory::CreateTabBodyForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderEdGraph* DocumentID) const
 {
 	check(DocumentID);
 
@@ -65,7 +65,7 @@ TSharedRef<SWidget> FTaskBuilderGraphTabFactory::CreateTabBodyForObject(const FW
 		.GraphEvents(InEvents);
 }
 
-const FSlateBrush* FTaskBuilderGraphTabFactory::GetTabIconForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderGraph* DocumentID) const
+const FSlateBrush* FTaskBuilderGraphTabFactory::GetTabIconForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderEdGraph* DocumentID) const
 {
 	return  FEditorStyle::GetBrush(TEXT("Graph.StateNode.Icon"));
 }

@@ -2,6 +2,7 @@
 
 #include "TaskBuilderEditorModule.h"
 #include "TaskBuilderActions.h"
+#include "Graphs/TaskBuilderGraphFactories.h"
 
 #define LOCTEXT_NAMESPACE "TaskBuilderEditorModule"
 
@@ -16,6 +17,8 @@ void FTaskBuilderEditorModule::OnPostEngineInit()
 	EAssetTypeCategories::Type TaskBuilderCategoryType = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("TaskBuilder")), LOCTEXT("TaskBuilderCategory", "Task Builder"));
 	TSharedRef<IAssetTypeActions> TaskBuilderActions = MakeShareable(new FTaskBuilderActions(TaskBuilderCategoryType));
 	AssetTools.RegisterAssetTypeActions(TaskBuilderActions);
+
+	FEdGraphUtilities::RegisterVisualNodeFactory(MakeShareable(new FTaskBuilderGraphNodeFactory()));
 }
 
 void FTaskBuilderEditorModule::ShutdownModule()
@@ -25,6 +28,8 @@ void FTaskBuilderEditorModule::ShutdownModule()
 		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
 		PropertyModule.NotifyCustomizationModuleChanged();
 	}
+
+	FEdGraphUtilities::UnregisterVisualNodeFactory(MakeShareable(new FTaskBuilderGraphNodeFactory()));
 }
 
 #undef LOCTEXT_NAMESPACE

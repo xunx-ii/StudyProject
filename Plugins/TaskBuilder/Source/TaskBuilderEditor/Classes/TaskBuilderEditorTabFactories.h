@@ -1,11 +1,11 @@
 #pragma once
 #include "TaskBuilderEditor.h"
-#include "Graphs/TaskBuilderGraph.h"
+#include "Graphs/TaskBuilderEdGraph.h"
 #include "WorkflowOrientedApp/WorkflowTabFactory.h"
 #include "WorkflowOrientedApp/WorkflowUObjectDocuments.h"
 
 
-struct FTaskBuilderGraphTabFactory : public FDocumentTabFactoryForObjects<UTaskBuilderGraph>
+struct FTaskBuilderGraphTabFactory : public FDocumentTabFactoryForObjects<UTaskBuilderEdGraph>
 {
 public:
 	FTaskBuilderGraphTabFactory(TSharedPtr<FTaskBuilderEditor> InTaskBuilderEditor);
@@ -13,9 +13,9 @@ public:
 	virtual void OnTabRefreshed(TSharedPtr<SDockTab> Tab) const override;
 
 protected:
-	virtual TAttribute<FText> ConstructTabNameForObject(UTaskBuilderGraph* DocumentID) const;
-	virtual TSharedRef<SWidget> CreateTabBodyForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderGraph* DocumentID) const;
-	virtual const FSlateBrush* GetTabIconForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderGraph* DocumentID) const;
+	virtual TAttribute<FText> ConstructTabNameForObject(UTaskBuilderEdGraph* DocumentID) const;
+	virtual TSharedRef<SWidget> CreateTabBodyForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderEdGraph* DocumentID) const;
+	virtual const FSlateBrush* GetTabIconForObject(const FWorkflowTabSpawnInfo& Info, UTaskBuilderEdGraph* DocumentID) const;
 
 private:
 	TWeakPtr<FTaskBuilderEditor> TaskBuilderEditor;

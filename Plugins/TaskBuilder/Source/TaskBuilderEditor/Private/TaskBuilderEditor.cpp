@@ -7,10 +7,11 @@
 
 #include "TaskBuilderBlueprint.h"
 #include "Kismet2/BlueprintEditorUtils.h"
-#include "Graphs/TaskBuilderGraph.h"
+#include "Graphs/TaskBuilderEdGraph.h"
 #include "Graphs/TaskBuilderGraphSchema.h"
 #include "WorkflowOrientedApp/WorkflowUObjectDocuments.h"
 #include "TaskBuilderEditorApplicationMode.h"
+#include "Graphs/GraphNodes/BeginTaskEdGraphNode.h"
 
 
 #define LOCTEXT_NAMESPACE "TaskBuilderEditor"
@@ -19,12 +20,12 @@ const FName FTaskBuilderEditorModes::TaskBuilderEditorMode("TaskBuilderEditorMod
 
 FName FTaskBuilderEditor::GetToolkitFName() const
 {
-	return FName("TaskBuilderEditor");
+	return FName("TaskBuilderEdGraph");
 }
 
 FText FTaskBuilderEditor::GetBaseToolkitName() const
 {
-	return LOCTEXT("TaskBuilderEditor", "Task Builder Editor");
+	return LOCTEXT("TaskBuilderEdGraph", "Task Builder Editor");
 }
 
 FString FTaskBuilderEditor::GetWorldCentricTabPrefix() const
@@ -58,15 +59,16 @@ UBlueprint* FTaskBuilderEditor::GetBlueprintObj() const
 void FTaskBuilderEditor::InvokeTaskBuilderGraphTab()
 {
 	TaskBuilderBlueprint = Cast<UTaskBuilderBlueprint>(GetBlueprintObj());
-	UTaskBuilderGraph* TaskBuilderEdGraph = NULL;
+	UTaskBuilderEdGraph* TaskBuilderEdGraph = NULL;
 
 	bool bNewGraph = false;
 	if (TaskBuilderBlueprint->TaskBuilderGraph == NULL)
 	{
+		bNewGraph = true;
 		UEdGraph* NewCreatedGraph = FBlueprintEditorUtils::CreateNewGraph(
 			TaskBuilderBlueprint.Get(),
 			FName("TaskBuilderGraph"),
-			UTaskBuilderGraph::StaticClass(),
+			UTaskBuilderEdGraph::StaticClass(),
 			UTaskBuilderGraphSchema::StaticClass());
 
 		TaskBuilderBlueprint->TaskBuilderGraph = NewCreatedGraph;
@@ -85,6 +87,19 @@ void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, co
 	// RegisterApplicationModes
 	AddApplicationMode(FTaskBuilderEditorModes::TaskBuilderEditorMode, MakeShareable(new FTaskBuilderEditorApplicationMode(SharedThis(this))));
 	SetCurrentMode(FTaskBuilderEditorModes::TaskBuilderEditorMode);
+
+	TArray<UBeginTaskEdGraphNode*> EntryNodeRef;
+	TaskBuilderGraph->GetNodesOfClass(EntryNodeRef);
+
+	if (EntryNodeRef.Num() > 0)
+	{
+		UTaskBuilderEdGraph* TaskBuilderEdGraph = NULL;
+		TaskBuilderEdGraph = Cast<UTaskBuilderEdGraph>(TaskBuilderBlueprint->TaskBuilderGraph);
+		if (TaskBuilderEdGraph)
+		{
+
+		}
+	}
 }
 
 
