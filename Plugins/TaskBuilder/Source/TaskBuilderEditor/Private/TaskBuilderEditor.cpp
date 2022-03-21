@@ -7,9 +7,15 @@
 
 #include "TaskBuilderBlueprint.h"
 #include "Kismet2/BlueprintEditorUtils.h"
+#include "Graphs/TaskBuilderGraph.h"
+#include "Graphs/TaskBuilderGraphSchema.h"
+#include "WorkflowOrientedApp/WorkflowUObjectDocuments.h"
+#include "TaskBuilderEditorApplicationMode.h"
 
 
 #define LOCTEXT_NAMESPACE "TaskBuilderEditor"
+
+const FName FTaskBuilderEditorModes::TaskBuilderEditorMode("TaskBuilderEditorMode");
 
 FName FTaskBuilderEditor::GetToolkitFName() const
 {
@@ -31,6 +37,11 @@ FLinearColor FTaskBuilderEditor::GetWorldCentricTabColorScale() const
 	return FLinearColor();
 }
 
+TSharedPtr<FDocumentTracker> FTaskBuilderEditor::GetDocumentManager()
+{
+	return DocumentManager;
+}
+
 UBlueprint* FTaskBuilderEditor::GetBlueprintObj() const
 {
 	const TArray<UObject*>& EditingObjs = GetEditingObjects();
@@ -44,9 +55,36 @@ UBlueprint* FTaskBuilderEditor::GetBlueprintObj() const
 	return nullptr;
 }
 
+void FTaskBuilderEditor::InvokeTaskBuilderGraphTab()
+{
+	TaskBuilderBlueprint = Cast<UTaskBuilderBlueprint>(GetBlueprintObj());
+	UTaskBuilderGraph* TaskBuilderEdGraph = NULL;
+
+	bool bNewGraph = false;
+	if (TaskBuilderBlueprint->TaskBuilderGraph == NULL)
+	{
+		UEdGraph* NewCreatedGraph = FBlueprintEditorUtils::CreateNewGraph(
+			TaskBuilderBlueprint.Get(),
+			FName("TaskBuilderGraph"),
+			UTaskBuilderGraph::StaticClass(),
+			UTaskBuilderGraphSchema::StaticClass());
+
+		TaskBuilderBlueprint->TaskBuilderGraph = NewCreatedGraph;
+		TaskBuilderGraph = NewCreatedGraph;
+	}
+
+	TSharedRef<FTabPayload_UObject> Payload = FTabPayload_UObject::Make(TaskBuilderGraph);
+	TSharedPtr<SDockTab> DocumentTab = DocumentManager->OpenDocument(Payload, bNewGraph ? FDocumentTracker::OpenNewDocument :
+		FDocumentTracker::RestorePreviousDocument);
+}
+
 void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, const TArray<UBlueprint*>& InBlueprints, bool bShouldOpenInDefaultsMode)
 {
 	InitBlueprintEditor(Mode, InitToolkitHost, InBlueprints, bShouldOpenInDefaultsMode);
+
+	// RegisterApplicationModes
+	AddApplicationMode(FTaskBuilderEditorModes::TaskBuilderEditorMode, MakeShareable(new FTaskBuilderEditorApplicationMode(SharedThis(this))));
+	SetCurrentMode(FTaskBuilderEditorModes::TaskBuilderEditorMode);
 }
 
 
