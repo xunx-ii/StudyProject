@@ -3,6 +3,7 @@
 
 #include "TaskBuilderFactory.h"
 #include "TaskBuilderBlueprint.h"
+#include "TaskBuilderComponent.h"
 
 UTaskBuilderFactory::UTaskBuilderFactory()
 {
@@ -10,7 +11,7 @@ UTaskBuilderFactory::UTaskBuilderFactory()
 	bEditAfterNew = true;
 
 	SupportedClass = UTaskBuilderBlueprint::StaticClass();
-	ParentClass = UActorComponent::StaticClass();
+	ParentClass = UTaskBuilderComponent::StaticClass();
 }
 
 bool UTaskBuilderFactory::ConfigureProperties()
@@ -27,7 +28,7 @@ UObject* UTaskBuilderFactory::FactoryCreateNew(UClass* InClass, UObject* InParen
 {
 	check(InClass->IsChildOf(UTaskBuilderBlueprint::StaticClass()));
 	UTaskBuilderBlueprint* NewBP = NewObject<UTaskBuilderBlueprint>(InParent, InClass, InName, Flags);
-	NewBP->ParentClass = UTaskBuilderBlueprint::StaticClass();
+	NewBP->ParentClass = UTaskBuilderComponent::StaticClass();
 	NewBP->BlueprintType = BPTYPE_Normal;
 	NewBP->bIsNewlyCreated = true;
 	NewBP->bLegacyNeedToPurgeSkelRefs = false;

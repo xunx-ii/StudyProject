@@ -12,7 +12,8 @@ public class TaskBuilderEditor : ModuleRules
 			new string[]
 			{
 				"Core",
-			});
+                "TaskBuilder"
+            });
 			
 			PrivateDependencyModuleNames.AddRange(
 			new string[]
@@ -31,7 +32,7 @@ public class TaskBuilderEditor : ModuleRules
                 "InputCore",
 				"AssetTools",
                 "Kismet",
-                "KismetCompiler",
+                "KismetCompiler"
             });
 	}
 }

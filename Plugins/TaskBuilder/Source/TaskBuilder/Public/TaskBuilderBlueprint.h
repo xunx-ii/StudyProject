@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class TASKBUILDEREDITOR_API UTaskBuilderBlueprint : public UBlueprint
+class TASKBUILDER_API UTaskBuilderBlueprint : public UBlueprint
 {
 	GENERATED_BODY()
 public:

@@ -20,8 +20,7 @@ public class TaskBuilder : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
-				"TaskBuilderEditor"
+				"SlateCore"
 			});
 	}
 }

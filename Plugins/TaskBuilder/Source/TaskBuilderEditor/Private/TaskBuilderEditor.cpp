@@ -31,6 +31,19 @@ FLinearColor FTaskBuilderEditor::GetWorldCentricTabColorScale() const
 	return FLinearColor();
 }
 
+UBlueprint* FTaskBuilderEditor::GetBlueprintObj() const
+{
+	const TArray<UObject*>& EditingObjs = GetEditingObjects();
+	for (int32 i = 0; i < EditingObjs.Num(); ++i)
+	{
+		if (EditingObjs[i]->IsA<UTaskBuilderBlueprint>())
+		{
+			return (UBlueprint*)EditingObjs[i];
+		}
+	}
+	return nullptr;
+}
+
 void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, const TArray<UBlueprint*>& InBlueprints, bool bShouldOpenInDefaultsMode)
 {
 	InitBlueprintEditor(Mode, InitToolkitHost, InBlueprints, bShouldOpenInDefaultsMode);
