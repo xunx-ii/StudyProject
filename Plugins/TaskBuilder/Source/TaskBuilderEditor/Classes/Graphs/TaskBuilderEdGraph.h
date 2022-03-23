@@ -15,7 +15,7 @@ class TASKBUILDEREDITOR_API UTaskBuilderEdGraph : public UEdGraph
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-		UEdGraphNode* EdGraphNode;
+		UEdGraphNode* BeginTaskEdGraphNode;
 	UPROPERTY()
 		class UTaskBuilderComponent* TaskBuilderComponent;
 };

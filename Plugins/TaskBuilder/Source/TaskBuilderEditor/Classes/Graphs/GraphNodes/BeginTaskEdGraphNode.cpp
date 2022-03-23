@@ -9,7 +9,6 @@
 
 //~ Begin UBeginTaskEdGraphNode
 
-
 void UBeginTaskEdGraphNode::AllocateDefaultPins()
 {
 	CreatePin(EGPD_Output, FName("BeginTaskGraphPin"), FName("Begin")); //Pins[0]	
@@ -39,6 +38,18 @@ UEdGraphNode* UBeginTaskEdGraphNode::GetOutputNode() const
 	return NULL;
 }
 
+void UBeginTaskEdGraphNode::DestroyNode()
+{
+	Super::DestroyNode();
+	if (UTaskBuilderEdGraph* CurrentGraph = CastChecked<UTaskBuilderEdGraph>(GetGraph()))
+	{
+		if (CurrentGraph->BeginTaskEdGraphNode != NULL)
+		{
+			CurrentGraph->BeginTaskEdGraphNode = NULL;
+		}
+	}
+}
+
 #undef LOCTEXT_NAMESPACE
 //~ End UBeginTaskEdGraphNode
 
@@ -57,7 +68,7 @@ void SBeginTaskGraphPin::Construct(const FArguments& InArgs, UEdGraphPin* InPin)
 	// Set up a hover for pins that is tinted the color of the pin.
 	SBorder::Construct(SBorder::FArguments()
 		.BorderImage(this, &SBeginTaskGraphPin::GetPinBorder)
-		.BorderBackgroundColor(this, &SBeginTaskGraphPin::GetPinColor)
+		.BorderBackgroundColor(this, &ThisClass::GetPinColor)
 		.OnMouseButtonDown(this, &ThisClass::OnPinMouseDown)
 		.Cursor(this, &ThisClass::GetPinCursor)
 	);

@@ -54,10 +54,6 @@ void FTaskBuilderEditor::LoadEditorSettings()
 	}
 }
 
-TSharedPtr<FDocumentTracker> FTaskBuilderEditor::GetDocumentManager()
-{
-	return DocumentManager;
-}
 
 UBlueprint* FTaskBuilderEditor::GetBlueprintObj() const
 {
@@ -75,7 +71,6 @@ UBlueprint* FTaskBuilderEditor::GetBlueprintObj() const
 void FTaskBuilderEditor::InvokeTaskBuilderGraphTab()
 {
 	TaskBuilderBlueprint = Cast<UTaskBuilderBlueprint>(GetBlueprintObj());
-	UTaskBuilderEdGraph* TaskBuilderEdGraph = NULL;
 
 	bool bNewGraph = false;
 	if (TaskBuilderBlueprint->TaskBuilderGraph == NULL)
@@ -87,18 +82,19 @@ void FTaskBuilderEditor::InvokeTaskBuilderGraphTab()
 			UTaskBuilderEdGraph::StaticClass(),
 			UTaskBuilderGraphSchema::StaticClass());
 
-		TaskBuilderBlueprint->TaskBuilderGraph = NewCreatedGraph;
-		TaskBuilderGraph = NewCreatedGraph;
-
-		TaskBuilderGraph->GetSchema()->CreateDefaultNodesForGraph(*TaskBuilderGraph);
+		TaskBuilderGraph = TaskBuilderBlueprint->TaskBuilderGraph = NewCreatedGraph;
 	}
 
-	if (!TaskBuilderEdGraph)
+	TaskBuilderGraph = TaskBuilderBlueprint->TaskBuilderGraph;
+	
+	if (UTaskBuilderEdGraph* CurrentGraph = CastChecked<UTaskBuilderEdGraph>(TaskBuilderGraph))
 	{
-		TaskBuilderEdGraph = Cast<UTaskBuilderEdGraph>(TaskBuilderBlueprint->TaskBuilderGraph);
-		TaskBuilderGraph = TaskBuilderBlueprint->TaskBuilderGraph;
+		if (CurrentGraph->BeginTaskEdGraphNode == NULL)
+		{
+			TaskBuilderGraph->GetSchema()->CreateDefaultNodesForGraph(*TaskBuilderGraph);
+		}
 	}
-
+	
 	TSharedRef<FTabPayload_UObject> Payload = FTabPayload_UObject::Make(TaskBuilderGraph);
 	TSharedPtr<SDockTab> DocumentTab = DocumentManager->OpenDocument(Payload, bNewGraph ? FDocumentTracker::OpenNewDocument :
 		FDocumentTracker::RestorePreviousDocument);

@@ -48,8 +48,6 @@ public:
 
 	virtual void LoadEditorSettings();
 
-	TSharedPtr<FDocumentTracker> GetDocumentManager();
-
 	virtual UBlueprint* GetBlueprintObj() const override;
 
 	void InvokeTaskBuilderGraphTab();

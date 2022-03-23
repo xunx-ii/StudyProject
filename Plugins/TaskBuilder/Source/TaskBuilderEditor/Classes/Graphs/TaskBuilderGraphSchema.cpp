@@ -34,6 +34,14 @@ void UTaskBuilderGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& C
 		{
 			TSharedPtr<FTaskBuilderGraphSchemaActions> Action = AddNewTaskNodeAction(ContextMenuBuilder, FText::GetEmpty(), LOCTEXT("AddEntryPoint", "Add Entry Point..."), LOCTEXT("AddEntryPointTooltip", "Define State Machine's Entry Point"));
 			Action->NodeTemplate = NewObject<UBeginTaskEdGraphNode>(ContextMenuBuilder.OwnerOfTemporaries);
+
+			if (UTaskBuilderEdGraph* CurrentGraph = CastChecked<UTaskBuilderEdGraph>(const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph)))
+			{
+				if (CurrentGraph->BeginTaskEdGraphNode == NULL)
+				{
+					CurrentGraph->BeginTaskEdGraphNode = Action->NodeTemplate;
+				}
+			}
 		}
 	}
 }
@@ -42,13 +50,13 @@ void UTaskBuilderGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
 	if (UTaskBuilderEdGraph* CurrentGraph = CastChecked<UTaskBuilderEdGraph>(&Graph))
 	{
-		if (CurrentGraph->EdGraphNode == NULL)
+		if (CurrentGraph->BeginTaskEdGraphNode == NULL)
 		{
 			FGraphNodeCreator<UBeginTaskEdGraphNode> NodeCreator(Graph);
 			UBeginTaskEdGraphNode* NewNode = NodeCreator.CreateNode();
 			NodeCreator.Finalize();
 			SetNodeMetaData(NewNode, FNodeMetadata::DefaultGraphNode);
-			CurrentGraph->EdGraphNode = NewNode;
+			CurrentGraph->BeginTaskEdGraphNode = NewNode;
 		}
 	}
 }

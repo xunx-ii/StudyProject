@@ -72,10 +72,10 @@ FTaskBuilderEditorApplicationMode::FTaskBuilderEditorApplicationMode(TSharedPtr<
 
 	FBlueprintEditorModule& BlueprintEditorModule = FModuleManager::LoadModuleChecked<FBlueprintEditorModule>("Kismet");
 	BlueprintEditorModule.OnRegisterTabsForEditor().Broadcast(StardardTabFactories, FTaskBuilderEditorModes::TaskBuilderEditorMode, InTaskBuilderEditor);
-
-	LayoutExtender = MakeShared<FLayoutExtender>();
 	BlueprintEditorModule.OnRegisterLayoutExtensions().Broadcast(*LayoutExtender);
 	
+	ToolbarExtender = MakeShareable(new FExtender);
+
 	if (UToolMenu* Toolbar = InTaskBuilderEditor->RegisterModeToolbarIfUnregistered(GetModeName()))
 	{
 		InTaskBuilderEditor->GetToolbarBuilder()->AddCompileToolbar(Toolbar);
@@ -84,6 +84,9 @@ FTaskBuilderEditorApplicationMode::FTaskBuilderEditorApplicationMode(TSharedPtr<
 		InTaskBuilderEditor->GetToolbarBuilder()->AddScriptingToolbar(Toolbar);
 		InTaskBuilderEditor->GetToolbarBuilder()->AddNewToolbar(Toolbar);
 	}
+	LayoutExtender = MakeShared<FLayoutExtender>();
+
+	TabLayout->ProcessExtensions(*LayoutExtender.Get());
 }
 
 void FTaskBuilderEditorApplicationMode::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
@@ -91,9 +94,6 @@ void FTaskBuilderEditorApplicationMode::RegisterTabFactories(TSharedPtr<FTabMana
 	TSharedPtr<FTaskBuilderEditor> Editor = TaskBuilderEditor.Pin();
 	// Tool bar tab
 	Editor->RegisterToolbarTab(InTabManager.ToSharedRef());
-
-	// Graph tab
-	Editor->GetDocumentManager()->RegisterDocumentFactory(MakeShareable(new FTaskBuilderGraphTabFactory(Editor)));
 
 	// Other tabs
 	Editor->PushTabFactories(CoreTabFactories);

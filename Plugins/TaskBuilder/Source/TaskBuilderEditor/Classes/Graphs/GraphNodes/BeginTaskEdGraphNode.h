@@ -8,7 +8,6 @@
 #include "SGraphNode.h"
 #include "BeginTaskEdGraphNode.generated.h"
 
-
 UCLASS()
 class TASKBUILDEREDITOR_API UBeginTaskEdGraphNode : public UEdGraphNode
 {
@@ -18,6 +17,7 @@ public:
 	virtual void AllocateDefaultPins() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
+	void DestroyNode() override;
 	//~ End UEdGraphNode Interface
 
 	UEdGraphNode* GetOutputNode() const;
@@ -51,10 +51,10 @@ public:
 public:
 	void Construct(const FArguments& InArgs, UBeginTaskEdGraphNode* InNode);
 
-	// SGraphNode interface
+	// Begin SGraphNode interface
 	virtual void UpdateGraphNode() override;
 	virtual void AddPin(const TSharedRef<SGraphPin>& PinToAdd) override;
-	// End of SGraphNode interface
+	// End SGraphNode interface
 
 protected:
 	FSlateColor GetBorderBackgroundColor() const;
