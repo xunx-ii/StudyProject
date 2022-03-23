@@ -17,6 +17,8 @@
 #include "Kismet2/DebuggerCommands.h"
 #include "BlueprintEditor.h"
 #include "Kismet2/CompilerResultsLog.h"
+#include "EdGraphSchema_K2_Actions.h"
+#include "K2Node_Event.h"
 
 
 #define LOCTEXT_NAMESPACE "TaskBuilderEditor"
@@ -75,6 +77,8 @@ void FTaskBuilderEditor::InvokeTaskBuilderGraphTab()
 	bool bNewGraph = false;
 	if (TaskBuilderBlueprint->TaskBuilderGraph == NULL)
 	{
+		CreateEventGraph();
+
 		bNewGraph = true;
 		UEdGraph* NewCreatedGraph = FBlueprintEditorUtils::CreateNewGraph(
 			TaskBuilderBlueprint.Get(),
@@ -100,6 +104,75 @@ void FTaskBuilderEditor::InvokeTaskBuilderGraphTab()
 		FDocumentTracker::RestorePreviousDocument);
 }
 
+void FTaskBuilderEditor::CreateEventGraph()
+{
+	ECreatedDocumentType GraphType = FBlueprintEditor::CGT_NewEventGraph;
+
+	if (!NewDocument_IsVisibleForType(GraphType))
+	{
+		return;
+	}
+
+	FText DocumentNameText = LOCTEXT("NewDocEventGraphName", "EventGraph");
+	bool bResetMyBlueprintFilter = true;
+
+	FName DocumentName = FName(*DocumentNameText.ToString());
+
+	check(IsEditingSingleBlueprint());
+
+	const FScopedTransaction Transaction(LOCTEXT("AddNewFunction", "Add New Function"));
+	GetBlueprintObj()->Modify();
+
+	EventGraphRef = FBlueprintEditorUtils::CreateNewGraph(GetBlueprintObj(), DocumentName, UEdGraph::StaticClass(), GetDefaultSchemaClass());
+	FBlueprintEditorUtils::AddUbergraphPage(GetBlueprintObj(), EventGraphRef);
+
+	OpenDocument(EventGraphRef, FDocumentTracker::OpenNewDocument);
+	EventGraphRef->bAllowDeletion = false;
+	EventGraphRef->bAllowRenaming = false;
+
+	TaskBuilderBlueprint->EvenGraphRef = EventGraphRef;
+
+	TArray<FName> EventFuncName;
+	EventFuncName.Add("ReceiveBeginPlay");
+	EventFuncName.Add("ReceiveTick");
+
+	TArray<FString> EventDescription;
+	EventDescription.Add("Event when play begins for this component");
+	EventDescription.Add("Event called every frame if tick is enabled.");
+
+	UClass* const OverrideFuncClass = GetBlueprintObj()->ParentClass;
+	bool bIsOverrideFunc = true;
+	const UEdGraphSchema_K2* K2Schema = GetDefault<UEdGraphSchema_K2>();
+
+	TArray<UK2Node_Event*> NewEventNodes;
+	TArray<UFunction*> ParentFunctionRef;
+
+	for (int x = 0; x < EventFuncName.Num(); x++)
+	{
+		if (FindUField<UFunction>(GetBlueprintObj()->ParentClass, EventFuncName[x]))
+		{
+			ParentFunctionRef.Add(FindUField<UFunction>(GetBlueprintObj()->ParentClass, EventFuncName[x]));
+
+			FVector2D SpawnPos = EventGraphRef->GetGoodPlaceForNewNode();
+
+			FName EventName = EventFuncName[x];
+			NewEventNodes.Add(FEdGraphSchemaAction_K2NewNode::SpawnNode<UK2Node_Event>(
+				EventGraphRef,
+				SpawnPos,
+				EK2NewNodeFlags::SelectNewNode,
+				[EventName, OverrideFuncClass](UK2Node_Event* NewInstance)
+				{
+					NewInstance->EventReference.SetExternalMember(EventName, OverrideFuncClass);
+					NewInstance->bOverrideFunction = true;
+				}
+			));
+			NewEventNodes[x]->NodeComment = EventDescription[x];
+			NewEventNodes[x]->bCommentBubbleMakeVisible = true;
+
+		}
+	}
+}
+
 void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, const TArray<UBlueprint*>& InBlueprints, bool bShouldOpenInDefaultsMode)
 {
 	//InitBlueprintEditor(Mode, InitToolkitHost, InBlueprints, bShouldOpenInDefaultsMode);
@@ -110,12 +183,9 @@ void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, co
 	TArray< UObject* > Objects;
 	for (UBlueprint* Blueprint : InBlueprints)
 	{
-		// Flag the blueprint as having been opened
 		Blueprint->bIsNewlyCreated = false;
-
 		Objects.Add(Blueprint);
 	}
-
 
 	if (!Toolbar.IsValid())
 	{

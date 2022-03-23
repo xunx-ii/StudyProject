@@ -6,6 +6,7 @@
 #include "EdGraph/EdGraphNode.h"
 #include "SGraphNode.h"
 #include "SGraphPin.h"
+#include "TaskBuilderBlueprint.h"
 #include "SubTaskEdGraphNode.generated.h"
 
 /**
@@ -23,9 +24,9 @@ public:
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
-	virtual bool CanDuplicateNode() const override { return true; }
-	virtual void PostPasteNode() override;
+	virtual bool CanDuplicateNode() const override { return false; }
 	virtual void PostPlacedNewNode() override;
+	virtual void OnRenameNode(const FString& NewName) override;
 	virtual void DestroyNode() override;
 	virtual void ValidateNodeDuringCompilation(class FCompilerResultsLog& MessageLog) const override;
 	virtual TSharedPtr<class INameValidatorInterface> MakeNameValidator() const override;
@@ -33,8 +34,12 @@ public:
 	
 	virtual UEdGraphPin* GetInputPin() const;
 	virtual UEdGraphPin* GetOutputPin() const;
+	UTaskBuilderBlueprint* GetTaskBuilderBlueprint() const;
 
 	FString GetTaskNodeName() const;
+private:
+	void CreateNewTaskEvent();
+	FString TaskNodeName;
 };
 
 

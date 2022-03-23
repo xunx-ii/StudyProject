@@ -7,6 +7,10 @@
 #include "SGraphPreviewer.h"
 #include "Kismet2/Kismet2NameValidators.h"
 #include "Graphs/TaskBuilderEdGraph.h"
+#include "Kismet2/BlueprintEditorUtils.h"
+#include "EdGraphSchema_K2_Actions.h"
+#include "K2Node_Event.h"
+#include "UObject/UnrealType.h"
 
 #define LOCTEXT_NAMESPACE "SubTaskEdGraphNode"
 
@@ -91,6 +95,7 @@ const FSlateBrush* SSubTaskEdGraphNodePin::GetPinBorder() const
 USubTaskEdGraphNode::USubTaskEdGraphNode()
 {
 	bCanRenameNode = true;
+	TaskNodeName = TEXT("SubTask");
 }
 
 void USubTaskEdGraphNode::AllocateDefaultPins()
@@ -122,14 +127,16 @@ FText USubTaskEdGraphNode::GetTooltipText() const
 	return LOCTEXT("SubTaskNodeTooltip", "This is a SubTask");
 }
 
-void USubTaskEdGraphNode::PostPasteNode()
-{
-	Super::PostPasteNode();
-}
-
 void USubTaskEdGraphNode::PostPlacedNewNode()
 {
 	Super::PostPlacedNewNode();
+}
+
+void USubTaskEdGraphNode::OnRenameNode(const FString& NewName)
+{
+	TSharedPtr<INameValidatorInterface> NameValidator = FNameValidatorFactory::MakeValidator(this);
+	TaskNodeName = NewName;
+	NameValidator->FindValidString(TaskNodeName);
 }
 
 void USubTaskEdGraphNode::DestroyNode()
@@ -157,9 +164,38 @@ UEdGraphPin* USubTaskEdGraphNode::GetOutputPin() const
 	return Pins[1];
 }
 
+UTaskBuilderBlueprint* USubTaskEdGraphNode::GetTaskBuilderBlueprint() const
+{
+	UBlueprint* Blueprint = FBlueprintEditorUtils::FindBlueprintForNode(this);
+	return CastChecked<UTaskBuilderBlueprint>(Blueprint);
+}
+
 FString USubTaskEdGraphNode::GetTaskNodeName() const
 {
-	return FString(TEXT(""));
+	return TaskNodeName;
+}
+
+void USubTaskEdGraphNode::CreateNewTaskEvent()
+{
+	FName EventName = FName(*TaskNodeName);
+	UClass* const OverrideFuncClass = GetTaskBuilderBlueprint()->ParentClass;
+	UFunction* TaskNodeEvent = FindUField<UFunction>(OverrideFuncClass, EventName);
+
+	if (TaskNodeEvent)
+	{
+		FVector2D SpawnPos = GetGraph()->GetGoodPlaceForNewNode();
+		
+		FEdGraphSchemaAction_K2NewNode::SpawnNode<UK2Node_Event>(
+			GetGraph(),
+			SpawnPos,
+			EK2NewNodeFlags::GotoNewNode,
+			[EventName, OverrideFuncClass](UK2Node_Event* NewInstance)
+			{
+				NewInstance->EventReference.SetExternalMember(EventName, OverrideFuncClass);
+				NewInstance->bOverrideFunction = true;
+			}
+		);
+	}
 }
 
 /////////////////////////////////////////////////////

@@ -52,8 +52,10 @@ public:
 
 	void InvokeTaskBuilderGraphTab();
 
+	void CreateEventGraph();
 private:
 	TWeakObjectPtr<UTaskBuilderBlueprint> TaskBuilderBlueprint;
 	UEdGraph* TaskBuilderGraph;
+	UEdGraph* EventGraphRef;
 };
 
