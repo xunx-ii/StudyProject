@@ -2,6 +2,7 @@
 #include "TaskBuilderGraphSchemaActions.h"
 #include "GraphNodes/BeginTaskEdGraphNode.h"
 #include "TaskBuilderEdGraph.h"
+#include "GraphNodes/SubTaskEdGraphNode.h"
 
 
 #define LOCTEXT_NAMESPACE "TaskBuilderGraphSchema"
@@ -18,6 +19,13 @@ TSharedPtr<FTaskBuilderGraphSchemaActions> AddNewTaskNodeAction(FGraphContextMen
 void UTaskBuilderGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
 
+	// Add SubTask
+	{
+		TSharedPtr<FTaskBuilderGraphSchemaActions> Action = AddNewTaskNodeAction(ContextMenuBuilder, FText::GetEmpty(), LOCTEXT("AddSubTask", "Add SubTask..."), LOCTEXT("AddSubTaskTooltip", "A New SubTask"));
+		Action->NodeTemplate = NewObject<USubTaskEdGraphNode>(ContextMenuBuilder.OwnerOfTemporaries);
+	}
+
+	// Entry point (only if doesn't already exist)
 	{
 		bool bHasEntry = false;
 		for (auto NodeIt = ContextMenuBuilder.CurrentGraph->Nodes.CreateConstIterator(); NodeIt; ++NodeIt)

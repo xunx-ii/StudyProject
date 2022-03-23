@@ -1,11 +1,16 @@
 #include "TaskBuilderGraphFactories.h"
 #include "GraphNodes/BeginTaskEdGraphNode.h"
+#include "GraphNodes/SubTaskEdGraphNode.h"
 
 TSharedPtr<class SGraphNode> FTaskBuilderGraphNodeFactory::CreateNode(class UEdGraphNode* InNode) const
 {
-	if (UBeginTaskEdGraphNode* NewNode = Cast<UBeginTaskEdGraphNode>(InNode))
+	if (UBeginTaskEdGraphNode* BeginTaskNode = Cast<UBeginTaskEdGraphNode>(InNode))
 	{
-		return SNew(SBeginTaskGraphNode, NewNode);
+		return SNew(SBeginTaskGraphNode, BeginTaskNode);
+	}
+	else if (USubTaskEdGraphNode* SubTaskNode = Cast<USubTaskEdGraphNode>(InNode))
+	{
+		return SNew(SSubTaskEdGraphNode, SubTaskNode);
 	}
 
 	return nullptr;
