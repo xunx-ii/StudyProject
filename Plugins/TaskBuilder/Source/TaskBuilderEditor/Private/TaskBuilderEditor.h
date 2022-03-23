@@ -46,6 +46,8 @@ public:
 	virtual FLinearColor GetWorldCentricTabColorScale() const override;
 	//~ End IToolkit Interface
 
+	virtual void LoadEditorSettings();
+
 	TSharedPtr<FDocumentTracker> GetDocumentManager();
 
 	virtual UBlueprint* GetBlueprintObj() const override;
