@@ -8,45 +8,22 @@
 #define LOCTEXT_NAMESPACE "BeginTaskEdGraphNode"
 
 //~ Begin UBeginTaskEdGraphNode
-void UBeginTaskEdGraphNode::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
-{
-	if (GetOutputNode())
-	{
-		PinConnectionListChanged(GetOutputPin());
-	}
-}
+
 
 void UBeginTaskEdGraphNode::AllocateDefaultPins()
 {
-	CreatePin(EGPD_Output, FName("BeginTaskGraphPin"), FName("Out")); //Pins[0]	
+	CreatePin(EGPD_Output, FName("BeginTaskGraphPin"), FName("Begin")); //Pins[0]	
 }
 
 FText UBeginTaskEdGraphNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-	return FText::FromString("Begin Task");
+	UEdGraph* Graph = GetGraph();
+	return Graph ? FText::FromString(Graph->GetName()) : FText::FromString(TEXT("BeginTaskEdGraphNode"));
 }
 
 FText UBeginTaskEdGraphNode::GetTooltipText() const
 {
 	return LOCTEXT("BeginTaskEdGraphNodeTooltip", "Begin Task");
-}
-
-void UBeginTaskEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
-{
-	UTaskBuilderEdGraph* TaskBuilderEdGraph = Cast<UTaskBuilderEdGraph>(GetGraph());
-
-	if (Pin == GetOutputPin())
-	{
-		if (Pin->LinkedTo.Num() > 0)
-		{
-
-		}
-	}
-}
-
-UEdGraphPin* UBeginTaskEdGraphNode::GetOutputPin() const
-{
-	return Pins[0];
 }
 
 UEdGraphNode* UBeginTaskEdGraphNode::GetOutputNode() const
@@ -121,12 +98,8 @@ void SBeginTaskGraphNode::UpdateGraphNode()
 	RightNodeBox.Reset();
 	LeftNodeBox.Reset();
 
-	const FSlateBrush* NodeTypeIcon = FEditorStyle::GetBrush(TEXT("Graph.StateNode.Icon"));
 
-	FLinearColor TitleShadowColor(0.20f, 0.20f, 0.20f);
-
-	TSharedPtr<SErrorText> ErrorText;
-	TSharedPtr<SNodeTitle> NodeTitle = SNew(SNodeTitle, GraphNode);
+	FLinearColor TitleShadowColor(0.6f, 0.6f, 0.6f);
 
 	this->ContentScale.Bind(this, &SGraphNode::GetContentScale);
 	this->GetOrAddSlot(ENodeZone::Center)
@@ -139,65 +112,18 @@ void SBeginTaskGraphNode::UpdateGraphNode()
 		.BorderBackgroundColor(this, &SBeginTaskGraphNode::GetBorderBackgroundColor)
 		[
 			SNew(SOverlay)
+
 			// PIN AREA
 		+ SOverlay::Slot()
 		.HAlign(HAlign_Fill)
 		.VAlign(VAlign_Fill)
+		.Padding(10.0f)
 		[
 			SAssignNew(RightNodeBox, SVerticalBox)
-		]
-
-	// STATE NAME AREA
-	+ SOverlay::Slot()
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.Padding(8.0f)
-		[
-			SNew(SBorder)
-			.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.ColorSpill"))
-		.BorderBackgroundColor(TitleShadowColor)
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.Visibility(EVisibility::SelfHitTestInvisible)
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-
-		.AutoWidth()
-		[
-			// POPUP ERROR MESSAGE
-			SAssignNew(ErrorText, SErrorText)
-			.BackgroundColor(this, &SBeginTaskGraphNode::GetErrorColor)
-		.ToolTipText(this, &SBeginTaskGraphNode::GetErrorMsgToolTip)
-		]
-	+ SHorizontalBox::Slot()
-		.Padding(FMargin(8.0f, 0.0f, 6.0f, 0.0f))
-		[
-			SNew(SVerticalBox)
-			+ SVerticalBox::Slot()
-		.AutoHeight()
-		[
-			SAssignNew(InlineEditableText, SInlineEditableTextBlock)
-			.Style(FEditorStyle::Get(), "Graph.StateNode.NodeTitleInlineEditableText")
-		.Text(NodeTitle.Get(), &SNodeTitle::GetHeadTitle)
-		.OnVerifyTextChanged(this, &SBeginTaskGraphNode::OnVerifyNameTextChanged)
-		.OnTextCommitted(this, &SBeginTaskGraphNode::OnNameTextCommited)
-		.IsReadOnly(this, &SBeginTaskGraphNode::IsNameReadOnly)
-		.IsSelected(this, &SBeginTaskGraphNode::IsSelectedExclusively)
-		]
-	+ SVerticalBox::Slot()
-		.AutoHeight()
-		[
-			NodeTitle.ToSharedRef()
-		]
-		]
-		]
 		]
 		]
 		];
 
-	ErrorReporting = ErrorText;
-	ErrorReporting->SetError(ErrorMsg);
 	CreatePinWidgets();
 }
 
@@ -214,23 +140,9 @@ void SBeginTaskGraphNode::AddPin(const TSharedRef<SGraphPin>& PinToAdd)
 	OutputPins.Add(PinToAdd);
 }
 
-void SBeginTaskGraphNode::CreatePinWidgets()
-{
-	UBeginTaskEdGraphNode* EntryNode = CastChecked<UBeginTaskEdGraphNode>(GraphNode);
-	if (EntryNode)
-	{
-		UEdGraphPin* CurPin = EntryNode->GetOutputPin();
-		if (!CurPin->bHidden)
-		{
-			TSharedPtr<SGraphPin> NewPin = SNew(SBeginTaskGraphPin, CurPin);
-			AddPin(NewPin.ToSharedRef());
-		}
-	}
-}
-
 FSlateColor SBeginTaskGraphNode::GetBorderBackgroundColor() const
 {
-	FLinearColor StateColor(0.7f, 0.50f, 0.06f);
+	FLinearColor StateColor(0.08f, 0.08f, 0.08f);
 	return StateColor;
 }
 

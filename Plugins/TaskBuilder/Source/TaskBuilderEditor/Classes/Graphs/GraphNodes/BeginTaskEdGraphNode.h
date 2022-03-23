@@ -14,18 +14,12 @@ class TASKBUILDEREDITOR_API UBeginTaskEdGraphNode : public UEdGraphNode
 {
 	GENERATED_BODY()
 public:
-	//~ Begin UObject Interface
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-	//~ End UObject Interface
-
 	//~ Begin UEdGraphNode Interface
 	virtual void AllocateDefaultPins() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
-	void PinConnectionListChanged(UEdGraphPin* Pin) override;
 	//~ End UEdGraphNode Interface
 
-	virtual UEdGraphPin* GetOutputPin() const;
 	UEdGraphNode* GetOutputNode() const;
 };
 
@@ -60,7 +54,6 @@ public:
 	// SGraphNode interface
 	virtual void UpdateGraphNode() override;
 	virtual void AddPin(const TSharedRef<SGraphPin>& PinToAdd) override;
-	virtual void CreatePinWidgets() override;
 	// End of SGraphNode interface
 
 protected:
