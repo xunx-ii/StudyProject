@@ -111,6 +111,6 @@ void FTaskBuilderEditorApplicationMode::PostActivateMode()
 
 	TaskBuilderEditor.Pin()->InvokeTaskBuilderGraphTab();
 
-	FApplicationMode::PostActivateMode();
+	FBlueprintEditorApplicationMode::PostActivateMode();
 }
 

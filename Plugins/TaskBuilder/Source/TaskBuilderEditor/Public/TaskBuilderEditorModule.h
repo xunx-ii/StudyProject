@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "TaskBuilderEditor.h"
 
 class FTaskBuilderEditorModule : public IModuleInterface
 {
@@ -13,6 +14,8 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	TSharedRef<FTaskBuilderEditor> CreateTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, class UTaskBuilderBlueprint* Blueprint);
 private:
+	void OnNewBlueprintCreated(UBlueprint* InBlueprint);
 	void OnPostEngineInit();
 };

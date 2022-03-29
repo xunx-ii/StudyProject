@@ -13,5 +13,7 @@ class UTaskBuilderGraphSchema : public UEdGraphSchema
 private:
 	void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
 	void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
-
+	virtual bool TryCreateConnection(UEdGraphPin* PinA, UEdGraphPin* PinB) const override;
+	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const override;
+	virtual bool CreateAutomaticConversionNodeAndConnections(UEdGraphPin* PinA, UEdGraphPin* PinB) const override;
 };

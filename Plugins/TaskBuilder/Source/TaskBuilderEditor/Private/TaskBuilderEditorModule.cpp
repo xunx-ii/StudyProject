@@ -3,6 +3,10 @@
 #include "TaskBuilderEditorModule.h"
 #include "TaskBuilderActions.h"
 #include "Graphs/TaskBuilderGraphFactories.h"
+#include "TaskBuilderBlueprint.h"
+#include "Kismet2/KismetEditorUtilities.h"
+#include "K2Node_TaskEvent.h"
+#include "BlueprintActionDatabase.h"
 
 #define LOCTEXT_NAMESPACE "TaskBuilderEditorModule"
 
@@ -18,7 +22,23 @@ void FTaskBuilderEditorModule::OnPostEngineInit()
 	TSharedRef<IAssetTypeActions> TaskBuilderActions = MakeShareable(new FTaskBuilderActions(TaskBuilderCategoryType));
 	AssetTools.RegisterAssetTypeActions(TaskBuilderActions);
 
+	FKismetEditorUtilities::RegisterOnBlueprintCreatedCallback(this, UTaskBuilderBlueprint::StaticClass(), FKismetEditorUtilities::FOnBlueprintCreated::CreateRaw(this, &FTaskBuilderEditorModule::OnNewBlueprintCreated));
+
 	FEdGraphUtilities::RegisterVisualNodeFactory(MakeShareable(new FTaskBuilderGraphNodeFactory()));
+	FEdGraphUtilities::RegisterVisualPinConnectionFactory(MakeShareable(new FTaskBuilderGraphPinConnectionFactory()));
+
+	if (FBlueprintActionDatabase* BAD = FBlueprintActionDatabase::TryGet())
+	{
+		BAD->RefreshClassActions(UK2Node_TaskEvent::StaticClass());
+	}
+}
+
+void FTaskBuilderEditorModule::OnNewBlueprintCreated(UBlueprint* InBlueprint)
+{
+	if (ensure(InBlueprint->UbergraphPages.Num() > 0))
+	{
+		UEdGraph* EventGraph = InBlueprint->UbergraphPages[0];
+	}
 }
 
 void FTaskBuilderEditorModule::ShutdownModule()
@@ -30,6 +50,14 @@ void FTaskBuilderEditorModule::ShutdownModule()
 	}
 
 	FEdGraphUtilities::UnregisterVisualNodeFactory(MakeShareable(new FTaskBuilderGraphNodeFactory()));
+	FEdGraphUtilities::UnregisterVisualPinConnectionFactory(MakeShareable(new FTaskBuilderGraphPinConnectionFactory()));
+}
+
+TSharedRef<FTaskBuilderEditor> FTaskBuilderEditorModule::CreateTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, class UTaskBuilderBlueprint* Blueprint)
+{
+	TSharedRef< FTaskBuilderEditor > NewEditor(new FTaskBuilderEditor());
+	NewEditor->InitTaskBuilderEditor(Mode, InitToolkitHost, Blueprint, false);
+	return NewEditor;
 }
 
 #undef LOCTEXT_NAMESPACE

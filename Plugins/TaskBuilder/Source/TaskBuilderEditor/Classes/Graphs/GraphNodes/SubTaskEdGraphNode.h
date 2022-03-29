@@ -7,7 +7,10 @@
 #include "SGraphNode.h"
 #include "SGraphPin.h"
 #include "TaskBuilderBlueprint.h"
+#include "K2Node_TaskEvent.h"
 #include "SubTaskEdGraphNode.generated.h"
+
+class UK2Node_Event;
 
 /**
  * 
@@ -19,13 +22,20 @@ class TASKBUILDEREDITOR_API USubTaskEdGraphNode : public UEdGraphNode
 public:
 	USubTaskEdGraphNode();
 
+	virtual void Serialize(FArchive& Ar) override;
+	virtual void PostLoad() override;
+
 	//~ Begin UEdGraphNode Interface
+	virtual UObject* GetJumpTargetForDoubleClick() const override;
+	virtual bool CanJumpToDefinition() const override;
+	virtual void JumpToDefinition() const override;
 	virtual void AllocateDefaultPins() override;
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FText GetTooltipText() const override;
 	virtual bool CanDuplicateNode() const override { return false; }
 	virtual void PostPlacedNewNode() override;
+	
 	virtual void OnRenameNode(const FString& NewName) override;
 	virtual void DestroyNode() override;
 	virtual void ValidateNodeDuringCompilation(class FCompilerResultsLog& MessageLog) const override;
@@ -37,9 +47,14 @@ public:
 	UTaskBuilderBlueprint* GetTaskBuilderBlueprint() const;
 
 	FString GetTaskNodeName() const;
+
 private:
-	void CreateNewTaskEvent();
-	FString TaskNodeName;
+	UPROPERTY()
+		FString TaskNodeName;
+	UPROPERTY()
+		UEdGraph* EventGraphRef;
+	UPROPERTY()
+		UK2Node_TaskEvent* TaskEvent;
 };
 
 

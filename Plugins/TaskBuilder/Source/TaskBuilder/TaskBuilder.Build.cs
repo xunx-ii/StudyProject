@@ -20,7 +20,8 @@ public class TaskBuilder : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore"
+				"SlateCore",
+				"BlueprintGraph"
 			});
 	}
 }

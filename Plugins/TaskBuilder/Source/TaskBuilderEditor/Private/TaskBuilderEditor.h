@@ -37,7 +37,13 @@ private:
 class FTaskBuilderEditor : public FBlueprintEditor
 {
 public:
-	void InitTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, const TArray<UBlueprint*>& InBlueprints, bool bShouldOpenInDefaultsMode);
+	FTaskBuilderEditor();
+	virtual ~FTaskBuilderEditor();
+	void InitTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UTaskBuilderBlueprint* InBlueprints, bool bShouldOpenInDefaultsMode);
+
+	//~ Begin FGCObject Interface
+	//virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	//~ End FGCObject Interface
 
 	//~ Begin IToolkit Interface
 	virtual FName GetToolkitFName() const override;
@@ -47,11 +53,10 @@ public:
 	//~ End IToolkit Interface
 
 	virtual void LoadEditorSettings();
+	virtual void SaveEditorSettings();
 
 	virtual UBlueprint* GetBlueprintObj() const override;
-
 	void InvokeTaskBuilderGraphTab();
-
 	void CreateEventGraph();
 private:
 	TWeakObjectPtr<UTaskBuilderBlueprint> TaskBuilderBlueprint;

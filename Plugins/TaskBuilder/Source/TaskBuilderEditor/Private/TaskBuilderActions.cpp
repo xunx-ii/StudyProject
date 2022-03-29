@@ -1,6 +1,7 @@
 #include "TaskBuilderActions.h"
 #include "TaskBuilderBlueprint.h"
 #include "TaskBuilderEditor.h"
+#include "TaskBuilderEditorModule.h"
 
 #define LOCTEXT_NAMESPACE "TaskBuilderActions"
 
@@ -34,21 +35,26 @@ void FTaskBuilderActions::OpenAssetEditor(const TArray<UObject*>& InObjects, TSh
 {
 	const EToolkitMode::Type Mode = EditWithinLevelEditor.IsValid() ? EToolkitMode::WorldCentric : EToolkitMode::Standalone;
 
-	TArray<UBlueprint*> InBlueprints;
-
-	for (auto Object : InObjects)
+	for (auto ObjIt = InObjects.CreateConstIterator(); ObjIt; ++ObjIt)
 	{
-		if (UBlueprint* NewAsset = Cast<UBlueprint>(Object))
+		UTaskBuilderBlueprint* TaskBuilderBlueprint = Cast<UTaskBuilderBlueprint>(*ObjIt);
+		if (TaskBuilderBlueprint != NULL)
 		{
-			InBlueprints.Add(NewAsset);
+			const bool bBringToFrontIfOpen = true;
+#if WITH_EDITOR
+			if (IAssetEditorInstance* EditorInstance = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->FindEditorForAsset(TaskBuilderBlueprint, bBringToFrontIfOpen))
+			{
+				EditorInstance->FocusWindow(TaskBuilderBlueprint);
+			}
+			else
+#endif
+			{
+				FTaskBuilderEditorModule& TaskBuilderEditorModule = FModuleManager::LoadModuleChecked<FTaskBuilderEditorModule>("TaskBuilderEditor");
+				TaskBuilderEditorModule.CreateTaskBuilderEditor(Mode, EditWithinLevelEditor, TaskBuilderBlueprint);
+			}
 		}
 	}
 
-	if (InBlueprints.Num() > 0)
-	{
-		TSharedRef< FTaskBuilderEditor > NewEditor(new FTaskBuilderEditor());
-		NewEditor->InitTaskBuilderEditor(Mode, EditWithinLevelEditor, InBlueprints, false);
-	}
 }
 
 uint32 FTaskBuilderActions::GetCategories()

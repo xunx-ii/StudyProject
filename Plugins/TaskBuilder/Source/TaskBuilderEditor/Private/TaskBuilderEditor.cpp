@@ -57,6 +57,12 @@ void FTaskBuilderEditor::LoadEditorSettings()
 }
 
 
+void FTaskBuilderEditor::SaveEditorSettings()
+{
+	UBlueprintEditorSettings* LocalSettings = GetMutableDefault<UBlueprintEditorSettings>();
+	LocalSettings->SaveConfig();
+}
+
 UBlueprint* FTaskBuilderEditor::GetBlueprintObj() const
 {
 	const TArray<UObject*>& EditingObjs = GetEditingObjects();
@@ -78,19 +84,16 @@ void FTaskBuilderEditor::InvokeTaskBuilderGraphTab()
 	if (TaskBuilderBlueprint->TaskBuilderGraph == NULL)
 	{
 		CreateEventGraph();
-
 		bNewGraph = true;
 		UEdGraph* NewCreatedGraph = FBlueprintEditorUtils::CreateNewGraph(
 			TaskBuilderBlueprint.Get(),
 			FName("TaskBuilderGraph"),
 			UTaskBuilderEdGraph::StaticClass(),
 			UTaskBuilderGraphSchema::StaticClass());
-
 		TaskBuilderGraph = TaskBuilderBlueprint->TaskBuilderGraph = NewCreatedGraph;
 	}
-
 	TaskBuilderGraph = TaskBuilderBlueprint->TaskBuilderGraph;
-	
+
 	if (UTaskBuilderEdGraph* CurrentGraph = CastChecked<UTaskBuilderEdGraph>(TaskBuilderGraph))
 	{
 		if (CurrentGraph->BeginTaskEdGraphNode == NULL)
@@ -168,24 +171,28 @@ void FTaskBuilderEditor::CreateEventGraph()
 			));
 			NewEventNodes[x]->NodeComment = EventDescription[x];
 			NewEventNodes[x]->bCommentBubbleMakeVisible = true;
-
 		}
 	}
 }
 
-void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, const TArray<UBlueprint*>& InBlueprints, bool bShouldOpenInDefaultsMode)
+FTaskBuilderEditor::FTaskBuilderEditor()
+{
+
+}
+
+FTaskBuilderEditor::~FTaskBuilderEditor()
+{
+	SaveEditorSettings();
+}
+
+void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UTaskBuilderBlueprint* InBlueprints, bool bShouldOpenInDefaultsMode)
 {
 	//InitBlueprintEditor(Mode, InitToolkitHost, InBlueprints, bShouldOpenInDefaultsMode);
-	bool bNewlyCreated = InBlueprints.Num() == 1 && InBlueprints[0]->bIsNewlyCreated;
+	bool bNewlyCreated = InBlueprints->bIsNewlyCreated;
+	InBlueprints->bIsNewlyCreated = false;
 
 	LoadEditorSettings();
 
-	TArray< UObject* > Objects;
-	for (UBlueprint* Blueprint : InBlueprints)
-	{
-		Blueprint->bIsNewlyCreated = false;
-		Objects.Add(Blueprint);
-	}
 
 	if (!Toolbar.IsValid())
 	{
@@ -194,6 +201,9 @@ void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, co
 
 	GetToolkitCommands()->Append(FPlayWorldCommands::GlobalPlayWorldActions.ToSharedRef());
 
+	TArray<UObject*> ObjectsBeingEdited;
+	ObjectsBeingEdited.Add(InBlueprints);
+
 	CreateDefaultCommands();
 
 	RegisterMenus();
@@ -201,10 +211,12 @@ void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, co
 	// Initialize the asset editor and spawn nothing (dummy layout)
 	const bool bCreateDefaultStandaloneMenu = true;
 	const bool bCreateDefaultToolbar = true;
-	const FName BlueprintEditorAppName = FName(TEXT("BlueprintEditorApp"));
-	InitAssetEditor(Mode, InitToolkitHost, BlueprintEditorAppName, FTabManager::FLayout::NullLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, Objects);
+	const FName BlueprintEditorAppName = FName(TEXT("TaskBuilderBlueprintEditorApp"));
+	InitAssetEditor(Mode, InitToolkitHost, BlueprintEditorAppName, FTabManager::FLayout::NullLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, ObjectsBeingEdited);
 
-	CommonInitialization(InBlueprints, bShouldOpenInDefaultsMode);
+	TArray<UBlueprint*> Blueprints;
+	Blueprints.Add(InBlueprints);
+	CommonInitialization(Blueprints, bShouldOpenInDefaultsMode);
 
 	InitalizeExtenders();
 
@@ -258,7 +270,5 @@ void FTaskBuilderEditor::InitTaskBuilderEditor(const EToolkitMode::Type Mode, co
 		}
 	}
 }
-
-
 
 #undef LOCTEXT_NAMESPACE

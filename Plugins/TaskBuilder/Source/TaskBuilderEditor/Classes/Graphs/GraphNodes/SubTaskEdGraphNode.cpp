@@ -11,6 +11,8 @@
 #include "EdGraphSchema_K2_Actions.h"
 #include "K2Node_Event.h"
 #include "UObject/UnrealType.h"
+#include "UObject/FrameworkObjectVersion.h"
+#include "Kismet2/KismetEditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "SubTaskEdGraphNode"
 
@@ -98,6 +100,49 @@ USubTaskEdGraphNode::USubTaskEdGraphNode()
 	TaskNodeName = TEXT("SubTask");
 }
 
+void USubTaskEdGraphNode::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	Ar.UsingCustomVersion(FFrameworkObjectVersion::GUID);
+}
+
+void USubTaskEdGraphNode::PostLoad()
+{
+	Super::PostLoad();
+	const int32 CustomVersion = GetLinkerCustomVersion(FFrameworkObjectVersion::GUID);
+
+	if (CustomVersion < FFrameworkObjectVersion::FixNonTransactionalPins)
+	{
+		int32 BrokenPinCount = 0;
+		for (UEdGraphPin_Deprecated* Pin : DeprecatedPins)
+		{
+			if (!Pin->HasAnyFlags(RF_Transactional))
+			{
+				++BrokenPinCount;
+				Pin->SetFlags(Pin->GetFlags() | RF_Transactional);
+			}
+		}
+	}
+}
+
+UObject* USubTaskEdGraphNode::GetJumpTargetForDoubleClick() const
+{
+	return TaskEvent;
+}
+
+bool USubTaskEdGraphNode::CanJumpToDefinition() const
+{
+	return GetJumpTargetForDoubleClick() != nullptr;
+}
+
+void USubTaskEdGraphNode::JumpToDefinition() const
+{
+	if (UObject* HyperlinkTarget = GetJumpTargetForDoubleClick())
+	{
+		FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(HyperlinkTarget);
+	}
+}
+
 void USubTaskEdGraphNode::AllocateDefaultPins()
 {
 	CreatePin(EGPD_Input, TEXT("Transition"), TEXT("In"));
@@ -129,7 +174,28 @@ FText USubTaskEdGraphNode::GetTooltipText() const
 
 void USubTaskEdGraphNode::PostPlacedNewNode()
 {
-	Super::PostPlacedNewNode();
+	EventGraphRef = GetTaskBuilderBlueprint()->EvenGraphRef;
+	if (EventGraphRef && TaskEvent == NULL)
+	{
+		TSharedPtr<INameValidatorInterface> NameValidator = FNameValidatorFactory::MakeValidator(this);
+		NameValidator->FindValidString(TaskNodeName);
+		FName EventName = FName(*TaskNodeName);
+		FString EventDescription = TEXT("Event when play begins for this component");
+		UClass* const OverrideFuncClass = GetTaskBuilderBlueprint()->ParentClass;
+		FVector2D SpawnPos = EventGraphRef->GetGoodPlaceForNewNode();
+		TaskEvent = FEdGraphSchemaAction_K2NewNode::SpawnNode<UK2Node_TaskEvent>(
+			EventGraphRef,
+			SpawnPos,
+			EK2NewNodeFlags::SelectNewNode,
+			[EventName, OverrideFuncClass](UK2Node_TaskEvent* NewInstance)
+			{
+				NewInstance->EventReference.SetExternalMember(EventName, OverrideFuncClass);
+				NewInstance->bOverrideFunction = false;
+			}
+		);
+		TaskEvent->NodeComment = EventDescription;
+		TaskEvent->bCommentBubbleMakeVisible = true;
+	}
 }
 
 void USubTaskEdGraphNode::OnRenameNode(const FString& NewName)
@@ -137,11 +203,20 @@ void USubTaskEdGraphNode::OnRenameNode(const FString& NewName)
 	TSharedPtr<INameValidatorInterface> NameValidator = FNameValidatorFactory::MakeValidator(this);
 	TaskNodeName = NewName;
 	NameValidator->FindValidString(TaskNodeName);
+	if (TaskEvent)
+	{
+		TaskEvent->CustomFunctionName = FName(*TaskNodeName);
+	}
 }
 
 void USubTaskEdGraphNode::DestroyNode()
 {
 	Super::DestroyNode();
+	
+	if (EventGraphRef && TaskEvent)
+	{
+		EventGraphRef->RemoveNode(TaskEvent);
+	}
 }
 
 void USubTaskEdGraphNode::ValidateNodeDuringCompilation(class FCompilerResultsLog& MessageLog) const
@@ -173,29 +248,6 @@ UTaskBuilderBlueprint* USubTaskEdGraphNode::GetTaskBuilderBlueprint() const
 FString USubTaskEdGraphNode::GetTaskNodeName() const
 {
 	return TaskNodeName;
-}
-
-void USubTaskEdGraphNode::CreateNewTaskEvent()
-{
-	FName EventName = FName(*TaskNodeName);
-	UClass* const OverrideFuncClass = GetTaskBuilderBlueprint()->ParentClass;
-	UFunction* TaskNodeEvent = FindUField<UFunction>(OverrideFuncClass, EventName);
-
-	if (TaskNodeEvent)
-	{
-		FVector2D SpawnPos = GetGraph()->GetGoodPlaceForNewNode();
-		
-		FEdGraphSchemaAction_K2NewNode::SpawnNode<UK2Node_Event>(
-			GetGraph(),
-			SpawnPos,
-			EK2NewNodeFlags::GotoNewNode,
-			[EventName, OverrideFuncClass](UK2Node_Event* NewInstance)
-			{
-				NewInstance->EventReference.SetExternalMember(EventName, OverrideFuncClass);
-				NewInstance->bOverrideFunction = true;
-			}
-		);
-	}
 }
 
 /////////////////////////////////////////////////////
