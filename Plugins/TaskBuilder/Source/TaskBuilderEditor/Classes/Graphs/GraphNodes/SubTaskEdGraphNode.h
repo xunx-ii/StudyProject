@@ -7,7 +7,6 @@
 #include "SGraphNode.h"
 #include "SGraphPin.h"
 #include "TaskBuilderBlueprint.h"
-#include "K2Node_TaskEvent.h"
 #include "SubTaskEdGraphNode.generated.h"
 
 class UK2Node_Event;
@@ -54,7 +53,7 @@ private:
 	UPROPERTY()
 		UEdGraph* EventGraphRef;
 	UPROPERTY()
-		UK2Node_TaskEvent* TaskEvent;
+		UK2Node_Event* TaskEvent;
 };
 
 

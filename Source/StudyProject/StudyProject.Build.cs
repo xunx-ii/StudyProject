@@ -13,7 +13,7 @@ public class StudyProject : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI
-		PrivateDependencyModuleNames.AddRange(new string[] { "TaskBuilder", "TaskBuilderEditor" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "TaskBuilder"});
 		
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

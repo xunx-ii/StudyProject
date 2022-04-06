@@ -5,8 +5,8 @@
 #include "Graphs/TaskBuilderGraphFactories.h"
 #include "TaskBuilderBlueprint.h"
 #include "Kismet2/KismetEditorUtilities.h"
-#include "K2Node_TaskEvent.h"
 #include "BlueprintActionDatabase.h"
+#include "K2Node_Event.h"
 
 #define LOCTEXT_NAMESPACE "TaskBuilderEditorModule"
 
@@ -29,7 +29,7 @@ void FTaskBuilderEditorModule::OnPostEngineInit()
 
 	if (FBlueprintActionDatabase* BAD = FBlueprintActionDatabase::TryGet())
 	{
-		BAD->RefreshClassActions(UK2Node_TaskEvent::StaticClass());
+		BAD->RefreshClassActions(UK2Node_Event::StaticClass());
 	}
 }
 

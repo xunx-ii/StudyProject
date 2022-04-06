@@ -183,11 +183,11 @@ void USubTaskEdGraphNode::PostPlacedNewNode()
 		FString EventDescription = TEXT("Event when play begins for this component");
 		UClass* const OverrideFuncClass = GetTaskBuilderBlueprint()->ParentClass;
 		FVector2D SpawnPos = EventGraphRef->GetGoodPlaceForNewNode();
-		TaskEvent = FEdGraphSchemaAction_K2NewNode::SpawnNode<UK2Node_TaskEvent>(
+		TaskEvent = FEdGraphSchemaAction_K2NewNode::SpawnNode<UK2Node_Event>(
 			EventGraphRef,
 			SpawnPos,
 			EK2NewNodeFlags::SelectNewNode,
-			[EventName, OverrideFuncClass](UK2Node_TaskEvent* NewInstance)
+			[EventName, OverrideFuncClass](UK2Node_Event* NewInstance)
 			{
 				NewInstance->EventReference.SetExternalMember(EventName, OverrideFuncClass);
 				NewInstance->bOverrideFunction = false;

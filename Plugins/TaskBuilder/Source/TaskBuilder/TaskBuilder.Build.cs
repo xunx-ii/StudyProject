@@ -21,7 +21,16 @@ public class TaskBuilder : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+			});
+
+        if (Target.Type == TargetType.Editor)
+        {
+            PrivateDependencyModuleNames.AddRange(
+            new string[]
+            {
+				"UnrealEd",
 				"BlueprintGraph"
 			});
-	}
+        }
+    }
 }
